@@ -17,5 +17,5 @@
    "name": "Yemeksepeti Joker Bekçisi",
    "permissions": [ "storage", "cookies", "notifications", "*://*.yemeksepeti.com/" ],
    "short_name": "Joker Bekçisi",
-   "version": "0.3.6"
+   "version": "0.3.8"
 }
