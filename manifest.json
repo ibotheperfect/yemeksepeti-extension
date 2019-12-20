@@ -7,15 +7,15 @@
       "default_icon": "img/icon.png",
       "default_popup": "popup.html"
    },
-   "description": "Yemeksepeti Joker Bekçisi",
+   "description": "Joker Bekçisi",
    "icons": {
       "128": "img/icon_128.png",
       "16": "img/icon.png",
       "48": "img/icon_48.png"
    },
    "manifest_version": 2,
-   "name": "Yemeksepeti Joker Bekçisi",
+   "name": "Joker Bekçisi",
    "permissions": [ "storage", "cookies", "notifications", "*://*.yemeksepeti.com/" ],
    "short_name": "Joker Bekçisi",
-   "version": "0.3.8"
+   "version": "0.3.9"
 }
