@@ -2,7 +2,7 @@
 
 var jokerNotifier = {
 
-  _jokerUrl: 'https://www.yemeksepeti.com/basket/GetNewJokerOffer',
+  _jokerUrl: 'https://gate.yemeksepeti.com/joker/api/v1/Joker/new-offer',
   _showNotification: false,
 
   checkJoker: function(showNotification) {
@@ -21,41 +21,48 @@ var jokerNotifier = {
 
   _check: function() {
     var _this = this,
-      ysRequest = {
-        'Culture': 'tr-TR',
-        'LanguageId': 'tr-TR'
+      ysData = {
+
+        //'LanguageId': 'tr-TR'
       };
+    var ysHeader = {
+      'Content-Type': 'application/json;charset=UTF-8',
+      //  'X-Requested-With': 'XMLHttpRequest'
+      'ys-culture': 'tr-TR'
+    }
+
 
     chrome.cookies.getAll({}, function(data) {
       $.each(data, function(index, cookie){
         switch(cookie.name) {
           case 'catalogName':
-            ysRequest['CatalogName'] = cookie.value;
+            ysHeader['ys-catalog'] = cookie.value;
             break;
-          case 'loginToken':
-            ysRequest['Token'] = cookie.value;
+      //    case 'loginToken':
+        //    ysRequest['Token'] = cookie.value;
+         //   break;
+          case 'selectedAreaId':
+            ysData['areaid'] = cookie.value;
+            break;
+          case 'oauth_access_token':
+            ysHeader['authorization'] = "Bearer " + cookie.value;
             break;
         }
       });
 
-      _this._fetchResult(ysRequest);
+      _this._fetchResult(ysData, ysHeader);
     });
   },
 
-  _fetchResult: function(ysRequest) {
+  _fetchResult: function(ysData, ysHeader) {
     var _this = this;
     $.ajax({
       url: this._jokerUrl,
-      type: 'post',
-      data: {
-        'ysRequest': ysRequest
-      },
-      headers: {
-        'Content-Type': 'application/json;charset=UTF-8',
-        'X-Requested-With': 'XMLHttpRequest'
-      },
+      type: 'get',
+      data: ysData,
+      headers: ysHeader,
       dataType: 'json',
-      success: function (data) {
+      complete: function (data) {
         if(_this._showNotification) {
           _this.showNotification(data);
         } else {
@@ -66,10 +73,17 @@ var jokerNotifier = {
     });
   },
 
-  displayResult: function(data) {
+  displayResult: function(data_) {
     var resultArea = $('.result');
     resultArea.html('');
+    console.log(data_);
 
+    if(data_.status != 200){
+      resultArea.html('Yemeksepetine bağlanılamadı.<br>Giriş yaptığınızdan emin olunuz.');
+      chrome.browserAction.setBadgeText ( { text: '' } );
+      return;
+    }
+    var data = data_.responseJSON.Data;
     if (data.OfferItems && data.OfferItems.length) {
       if (typeof(startTimer) === typeof(Function)) {
         startTimer(data.RemainingDuration/1000, $('#duration'));
@@ -79,11 +93,11 @@ var jokerNotifier = {
 
       $.each(data.OfferItems, function(index, offer) {
         var row = $('<tr/>', {
-          'data-href': 'http://www.yemeksepeti.com' + offer.Restaurant.RestaurantUrl
+          'data-href': 'https://www.yemeksepeti.com' + offer.Restaurant.RestaurantSeoUrl
         });
 
         row.append($('<td/>').html($('<img />', {
-          src: 'http:'+offer.Restaurant.JokerImageUrl,
+          src: offer.Restaurant.JokerImageUrl,
           alt: offer.Restaurant.DisplayName,
           width: 60
         })));
@@ -106,7 +120,8 @@ var jokerNotifier = {
   // Aynı notification tekrar çıkmasın diye son 8 jokeri tutuyor
   history: Array(8).fill(''),
 
-  showNotification: function(data) {
+  showNotification: function(data_) {
+    var data = data_.responseJSON.Data;
     var _this = this;
     $.each(data.OfferItems, function(index, offer) {
       if(_this.history.indexOf(offer.Restaurant.DisplayName) == -1) {
@@ -114,7 +129,7 @@ var jokerNotifier = {
           type: 'basic',
           title: 'Joker İndirimi!',
           message: offer.Restaurant.DisplayName + '('+ offer.Restaurant.AveragePoint +')',
-          iconUrl: 'http:'+ offer.Restaurant.JokerImageUrl
+          iconUrl: offer.Restaurant.JokerImageUrl
         }
 
         _this.history.shift();
