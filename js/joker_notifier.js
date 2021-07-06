@@ -2,6 +2,7 @@
 
 var jokerNotifier = {
 
+  _homepage: 'https://www.yemeksepeti.com',
   _jokerUrl: 'https://gate.yemeksepeti.com/joker/api/v1/Joker/new-offer',
   _showNotification: false,
 
@@ -56,8 +57,9 @@ var jokerNotifier = {
 
   _fetchResult: function(ysData, ysHeader) {
     var _this = this;
+    $.get( _this._homepage);
     $.ajax({
-      url: this._jokerUrl,
+      url: _this._jokerUrl,
       type: 'get',
       data: ysData,
       headers: ysHeader,
@@ -79,7 +81,7 @@ var jokerNotifier = {
     console.log(data_);
 
     if(data_.status != 200){
-      resultArea.html('Yemeksepetine bağlanılamadı.<br>Giriş yaptığınızdan emin olunuz.');
+      resultArea.html('Yemeksepetine bağlanılamadı.<br><a href="'+ this._homepage +'" target="_blank">Giriş</a> yaptığınızdan emin olunuz.');
       chrome.browserAction.setBadgeText ( { text: '' } );
       return;
     }
